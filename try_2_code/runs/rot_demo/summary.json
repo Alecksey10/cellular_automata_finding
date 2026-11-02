@@ -1,0 +1,20 @@
+{
+  "requested": 2773,
+  "executed": 2758,
+  "passed": 10,
+  "rejected": 1311,
+  "stopped": 1437,
+  "errors": 0,
+  "infeasible": 0,
+  "skipped": 0,
+  "interrupted": false,
+  "target_reached": true,
+  "stopped_by_file": false,
+  "duration": 6.066,
+  "by_reason": {
+    "автомат: вырождение: не осталось живых клеток": 1437,
+    "stability": 706,
+    "rot_structure": 354,
+    "zero_balance": 251
+  }
+}

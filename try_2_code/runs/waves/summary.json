@@ -1,0 +1,20 @@
+{
+  "requested": 92,
+  "executed": 77,
+  "passed": 3,
+  "rejected": 74,
+  "stopped": 0,
+  "errors": 0,
+  "infeasible": 25,
+  "skipped": 0,
+  "interrupted": false,
+  "target_reached": true,
+  "stopped_by_file": false,
+  "duration": 0.264,
+  "by_reason": {
+    "fill_band": 52,
+    "phases": 10,
+    "activity": 8,
+    "period": 4
+  }
+}

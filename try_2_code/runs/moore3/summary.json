@@ -1,0 +1,20 @@
+{
+  "requested": 339,
+  "executed": 325,
+  "passed": 1,
+  "rejected": 282,
+  "stopped": 42,
+  "errors": 0,
+  "infeasible": 634,
+  "skipped": 0,
+  "interrupted": false,
+  "target_reached": true,
+  "stopped_by_file": false,
+  "duration": 0.345,
+  "by_reason": {
+    "symmetry": 193,
+    "fill_band": 72,
+    "автомат: вырождение: не осталось живых клеток": 42,
+    "period": 17
+  }
+}

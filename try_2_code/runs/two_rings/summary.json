@@ -1,0 +1,19 @@
+{
+  "requested": 5286,
+  "executed": 5270,
+  "passed": 75,
+  "rejected": 5125,
+  "stopped": 70,
+  "errors": 0,
+  "infeasible": 731,
+  "skipped": 0,
+  "interrupted": true,
+  "target_reached": false,
+  "stopped_by_file": false,
+  "duration": 15.913,
+  "by_reason": {
+    "stability": 2674,
+    "clouds": 2451,
+    "автомат: вырождение: не осталось живых клеток": 70
+  }
+}

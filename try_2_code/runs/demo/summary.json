@@ -1,0 +1,17 @@
+{
+  "requested": 60,
+  "executed": 60,
+  "passed": 1,
+  "rejected": 45,
+  "stopped": 14,
+  "errors": 0,
+  "infeasible": 43,
+  "skipped": 0,
+  "interrupted": false,
+  "duration": 0.215,
+  "by_reason": {
+    "density": 32,
+    "автомат: вырождение: не осталось живых клеток": 14,
+    "squares": 13
+  }
+}
