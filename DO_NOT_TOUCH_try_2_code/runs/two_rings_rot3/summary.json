@@ -1,0 +1,16 @@
+{
+  "requested": 0,
+  "executed": 0,
+  "passed": 0,
+  "rejected": 0,
+  "stopped": 0,
+  "errors": 0,
+  "infeasible": 0,
+  "skipped": 0,
+  "interrupted": false,
+  "target_reached": false,
+  "stopped_by_file": false,
+  "duration": 0.008,
+  "by_reason": {},
+  "visualizers": {}
+}
