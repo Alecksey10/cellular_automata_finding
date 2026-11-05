@@ -25,7 +25,11 @@
 
 результаты пятой попытки. 
 Перебор автоматов со стратегиями смерти/рождения/выживания по числу соседей
-[![video](./try_3_code/static/image.png)](./try_3_code/static/video1.mp4)
+<video controls>
+  <source src="./try_3_code/static/video1.mp4" type="video/mp4">
+</video>
 
 Перебор автоматов со стратегией двух взаимодействующих групп (оранжевая и синяя)
-[![video](./try_3_code/static/image2.png)](./try_3_code/static/video2.mp4)
+<video controls>
+  <source src="./try_3_code/static/video2.mp4" type="video/mp4">
+</video>
