@@ -1,2 +1,4 @@
-**.png
+
 **/__pycache__
+try_3_code/site/**/*.png
+try_3_code/viz/**/*.png
