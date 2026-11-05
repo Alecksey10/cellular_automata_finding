@@ -2,9 +2,13 @@
 
 Прогон хранит ровно то, что нужно для отбора и воспроизведения:
 
-* ``trials.jsonl`` — компактная запись о каждом исполненном конфиге;
 * ``successes.jsonl`` — только успешные конфиги (настройки + метрики);
 * ``summary.json`` — счётчики и параметры запуска.
+
+Каждый исполненный конфиг в журнал не пишется: отбракованные варианты
+занимают место, но ничего не дают для просмотра. Счётчики отклонённых и
+остановленных тестов остаются в ``summary.json``, а ``--resume`` пропускает
+уже найденные успехи.
 
 Массивы и картинки не сохраняются. Конфиг вместе с seed — это и есть способ
 заново собрать автомат (:mod:`sweep.replay`), поэтому визуализация всегда
@@ -85,18 +89,16 @@ class RunStore:
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.successes_path = self.directory / "successes.jsonl"
-        self.trials_path = self.directory / "trials.jsonl"
         self.summary_path = self.directory / "summary.json"
 
     # ------------------------------------------------------------------
     def done_digests(self) -> set[str]:
-        return {record.get("digest") for record in read_jsonl(self.trials_path) if record.get("digest")}
+        """Уже найденные успехи: их не нужно проверять повторно."""
+
+        return {record.get("digest") for record in read_jsonl(self.successes_path) if record.get("digest")}
 
     def successes(self) -> list[dict[str, Any]]:
         return read_jsonl(self.successes_path)
-
-    def trials(self) -> list[dict[str, Any]]:
-        return read_jsonl(self.trials_path)
 
     def summary(self) -> dict[str, Any]:
         if self.summary_path.exists():
@@ -117,7 +119,6 @@ class RunStore:
             "details": dict(result.details),
             "frames": len(result.frames),
         }
-        self._append(self.trials_path, record)
         if result.status == SUCCESS:
             self._append(self.successes_path, record)
         return record

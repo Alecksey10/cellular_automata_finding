@@ -11,7 +11,7 @@ import colorsys
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 RGB = tuple[int, int, int]
 
@@ -54,6 +54,11 @@ class Visualizer:
 
     def legend(self, states: int) -> list[tuple[RGB, str]]:
         return []
+
+    def rule_info(self, values: Mapping[str, Any]) -> Mapping[str, Any] | None:
+        """Необязательный формальный паспорт правила для галереи."""
+
+        return None
 
     def background(self) -> RGB:
         return (8, 8, 10)

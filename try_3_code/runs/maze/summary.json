@@ -1,0 +1,19 @@
+{
+  "trials": 1500,
+  "passed": 99,
+  "rejected": 0,
+  "stopped": 1401,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 99,
+  "elapsed": 40.403,
+  "experiment": "maze",
+  "description": "лабиринт из растущих стен: топология, окно обзора, толщина стен и проходов",
+  "strategy": "random",
+  "seed": 3,
+  "mode": "process",
+  "workers": 4,
+  "limit": 1500,
+  "until": null,
+  "out": "runs/maze"
+}

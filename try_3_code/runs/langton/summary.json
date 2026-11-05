@@ -1,0 +1,19 @@
+{
+  "trials": 3200,
+  "passed": 91,
+  "rejected": 0,
+  "stopped": 3109,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 91,
+  "elapsed": 86.78,
+  "experiment": "langton",
+  "description": "муравей Ленгтона: след-сетка, наборы правил, отбор паттернов",
+  "strategy": "random",
+  "seed": 1,
+  "mode": "process",
+  "workers": 4,
+  "limit": 3200,
+  "until": null,
+  "out": "runs/langton"
+}

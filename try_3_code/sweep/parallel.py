@@ -53,7 +53,8 @@ class RunOptions:
     max_iterations: int | None = None
     skip: int = 0
     quiet: bool = False
-    record_frames: bool = True
+    # кадры при переборе не используются: прогон хранит только конфиг
+    record_frames: bool = False
 
 
 def _worker_init(

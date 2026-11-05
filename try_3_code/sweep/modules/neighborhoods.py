@@ -113,6 +113,96 @@ class RadiusDisc(_BaseNeighborhood):
         )
 
 
+class DuelRings(_BaseNeighborhood):
+    """Два кольца 3×3 / 5×5 для дуэли двух групп."""
+
+    id = "neighborhood.duel_rings"
+    label = "два кольца 3×3 / 5×5"
+
+    def declare(self, ns: Namespace, view) -> None:
+        ns.choice("wrap", [True, False])
+
+    def spec(self, fixed: Mapping[str, Any]) -> NeighborhoodSpec:
+        wrap = bool(self.get(fixed, "wrap"))
+        inner_offsets = _disc_offsets(1, "chebyshev")
+        all_offsets = _disc_offsets(2, "chebyshev")
+        dy, dx = _arrays(all_offsets)
+        inner_dy, inner_dx = _arrays(inner_offsets)
+        return NeighborhoodSpec(
+            name="duel-rings-3x5",
+            dy=dy,
+            dx=dx,
+            inner_dy=inner_dy,
+            inner_dx=inner_dx,
+            wrap=wrap,
+            max_count=len(all_offsets),
+            inner_max_count=len(inner_offsets),
+        )
+
+
+class Square5x5(_BaseNeighborhood):
+    """Окрестность 5×5 без центральной клетки.
+
+    Это окно видимости «радиус 2» по Чебышёву: 24 соседа, внутреннее кольцо
+    3×3 (8 клеток) и внешнее кольцо 5×5 (16 клеток). Именно на таком окне
+    работает эксперимент ``omega5``.
+    """
+
+    id = "neighborhood.square5"
+    label = "окно 5×5 (24 соседа)"
+
+    def declare(self, ns: Namespace, view) -> None:
+        ns.choice("wrap", [True, False])
+
+    def spec(self, fixed: Mapping[str, Any]) -> NeighborhoodSpec:
+        wrap = bool(self.get(fixed, "wrap"))
+        inner_offsets = _disc_offsets(1, "chebyshev")
+        all_offsets = _disc_offsets(2, "chebyshev")
+        dy, dx = _arrays(all_offsets)
+        inner_dy, inner_dx = _arrays(inner_offsets)
+        return NeighborhoodSpec(
+            name="square5x5",
+            dy=dy,
+            dx=dx,
+            inner_dy=inner_dy,
+            inner_dx=inner_dx,
+            wrap=wrap,
+            max_count=len(all_offsets),
+            inner_max_count=len(inner_offsets),
+        )
+
+
+class Square9x9(_BaseNeighborhood):
+    """Окрестность 9×9 без центральной клетки: окно видимости радиус 4.
+
+    80 соседей, внутреннее кольцо 3×3 (8 клеток) и внешнее 9×9. На таком окне
+    работает эксперимент ``maze9``: механизм выбирает подмаску внутри него.
+    """
+
+    id = "neighborhood.square9"
+    label = "окно 9×9 (80 соседей)"
+
+    def declare(self, ns, view) -> None:
+        ns.choice("wrap", [True, False])
+
+    def spec(self, fixed: Mapping[str, Any]) -> NeighborhoodSpec:
+        wrap = bool(self.get(fixed, "wrap"))
+        inner_offsets = _disc_offsets(1, "chebyshev")
+        all_offsets = _disc_offsets(4, "chebyshev")
+        dy, dx = _arrays(all_offsets)
+        inner_dy, inner_dx = _arrays(inner_offsets)
+        return NeighborhoodSpec(
+            name="square9x9",
+            dy=dy,
+            dx=dx,
+            inner_dy=inner_dy,
+            inner_dx=inner_dx,
+            wrap=wrap,
+            max_count=len(all_offsets),
+            inner_max_count=len(inner_offsets),
+        )
+
+
 class TwoRings(_BaseNeighborhood):
     id = "neighborhood.two_rings"
     label = "два радиальных кольца"
@@ -146,6 +236,14 @@ class TwoRings(_BaseNeighborhood):
         )
 
 
-ALL_NEIGHBORHOODS = [Moore, RadiusDisc, TwoRings]
+ALL_NEIGHBORHOODS = [Moore, RadiusDisc, TwoRings, Square5x5, Square9x9, DuelRings]
 
-__all__ = ["ALL_NEIGHBORHOODS", "Moore", "RadiusDisc", "TwoRings"]
+__all__ = [
+    "ALL_NEIGHBORHOODS",
+    "DuelRings",
+    "Moore",
+    "RadiusDisc",
+    "Square5x5",
+    "Square9x9",
+    "TwoRings",
+]

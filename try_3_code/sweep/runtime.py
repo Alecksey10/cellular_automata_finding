@@ -106,7 +106,7 @@ class Trial:
                         or index == iterations - 1
                     ):
                         self._push(total_iterations, phase.name, data, metrics)
-                    if phase.frequency == "each":
+                    if phase.frequency == "each" and (index + 1) % phase.every == 0:
                         observation = Observation(phase.name, index, data, metrics)
                         for module, runtime in runtimes:
                             verdict = runtime.check(observation)

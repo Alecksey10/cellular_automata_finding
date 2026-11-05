@@ -1,0 +1,19 @@
+{
+  "trials": 10730,
+  "passed": 500,
+  "rejected": 0,
+  "stopped": 10230,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 500,
+  "elapsed": 46.566,
+  "experiment": "rings_rot",
+  "description": "рождение по внутреннему кольцу, выживание по сумме, гниение",
+  "strategy": "random",
+  "seed": 0,
+  "mode": "serial",
+  "workers": 8,
+  "limit": 1000000,
+  "until": 500,
+  "out": "runs/rings_rout"
+}

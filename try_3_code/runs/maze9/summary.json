@@ -1,0 +1,19 @@
+{
+  "trials": 1200,
+  "passed": 44,
+  "rejected": 0,
+  "stopped": 1156,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 44,
+  "elapsed": 41.487,
+  "experiment": "maze9",
+  "description": "лабиринт с окном 9×9: механизмы, малые изменения карты, графы стен и проходов",
+  "strategy": "random",
+  "seed": 5,
+  "mode": "process",
+  "workers": 4,
+  "limit": 1200,
+  "until": null,
+  "out": "runs/maze9"
+}

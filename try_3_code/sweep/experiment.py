@@ -34,6 +34,8 @@ class Phase:
     iterations: Handle
     filters: tuple[FilterModule, ...] = ()
     frequency: str = "end"
+    # как часто вызывать фильтры при frequency="each": каждые ``every`` шагов
+    every: int = 1
 
 
 class Experiment:
@@ -105,13 +107,16 @@ class Experiment:
         iterations: Any,
         filters: Sequence[FilterModule] = (),
         frequency: str = "end",
+        every: int = 1,
     ) -> Phase:
         if frequency not in ("end", "each"):
             raise ValueError("frequency должен быть 'end' или 'each'")
+        if int(every) < 1:
+            raise ValueError("every должен быть положительным")
         attached = tuple(filters)
         for module in attached:
             self.filter(module)
-        phase = Phase(name, as_handle(iterations), attached, frequency)
+        phase = Phase(name, as_handle(iterations), attached, frequency, int(every))
         self._phases.append(phase)
         return phase
 

@@ -9,11 +9,15 @@ from .filters import (
     ALL_FILTERS,
     ClustersFilter,
     DensityFilter,
+    DynamicsFilter,
+    GroupPresenceFilter,
     PhasesFilter,
+    PresenceFilter,
     StabilityFilter,
+    StateSharesFilter,
     SymmetryFilter,
 )
-from .neighborhoods import ALL_NEIGHBORHOODS, Moore, RadiusDisc, TwoRings
+from .neighborhoods import ALL_NEIGHBORHOODS, DuelRings, Moore, RadiusDisc, Square5x5, TwoRings
 from .randomizers import ClusteredFill, SymmetricFill, UniformFill
 
 __all__ = [
@@ -22,14 +26,20 @@ __all__ = [
     "ClusteredFill",
     "ClustersFilter",
     "DensityFilter",
+    "DynamicsFilter",
+    "DuelRings",
+    "GroupPresenceFilter",
     "Grid2D",
     "Moore",
     "PhasesFilter",
+    "PresenceFilter",
     "RadiusDisc",
     "StabilityFilter",
     "SymmetricFill",
     "SymmetricGrid2D",
     "SymmetryFilter",
+    "Square5x5",
+    "StateSharesFilter",
     "TwoRings",
     "UniformFill",
 ]
