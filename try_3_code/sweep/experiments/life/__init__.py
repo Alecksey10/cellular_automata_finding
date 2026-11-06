@@ -16,33 +16,28 @@ from numba import njit
 from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement, eq, ge
 from ...kernels import JIT_KWARGS
+from ...neighbors.counts import count_nonzero
 from ...module import Role
 from ...modules.data import Grid2D
 from ...modules.filters import ClustersFilter, DensityFilter, StabilityFilter
-from ...modules.neighborhoods import Moore, RadiusDisc
+from ...neighbors import Moore, RadiusDisc
 from ...modules.randomizers import ClusteredFill, UniformFill
 from .visualizer import LifeVisualizer
 
 
 @njit(**JIT_KWARGS)
 def step_life(src, dst, dy, dx, wrap, zero, born_lo, born_hi, surv_lo, surv_hi):
-    """Одна итерация B/S: живые клетки — состояние 1, мёртвые — ``zero``."""
+    """Одна итерация B/S: живые клетки — состояние 1, мёртвые — ``zero``.
 
+    Обход соседей — общий счётчик из :mod:`sweep.neighbors.counts`; цикл по
+    смещениям с wrap и границами больше не дублируется в эксперименте.
+    """
+
+    neighbors_of = count_nonzero(src, dy, dx, wrap, zero)
     height, width = src.shape
-    total = dy.size
     for y in range(height):
         for x in range(width):
-            neighbors = 0
-            for k in range(total):
-                yy = y + dy[k]
-                xx = x + dx[k]
-                if wrap:
-                    yy = yy % height
-                    xx = xx % width
-                elif yy < 0 or yy >= height or xx < 0 or xx >= width:
-                    continue
-                if src[yy, xx] != zero:
-                    neighbors += 1
+            neighbors = neighbors_of[y, x]
             state = src[y, x]
             if state == zero:
                 dst[y, x] = 1 if born_lo <= neighbors <= born_hi else zero

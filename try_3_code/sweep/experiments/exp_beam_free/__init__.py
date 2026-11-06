@@ -10,7 +10,7 @@ from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement, eq, ge
 from ...module import Role
 from ...modules.filters import DensityFilter, DynamicsFilter, GroupPresenceFilter
-from ...modules.neighborhoods import DuelRings
+from ...neighbors import DuelRings
 from ...modules.randomizers import ClusteredFill, SymmetricFill, UniformFill
 from .data import DuelGrid
 from .fill import BiasedDuelFill

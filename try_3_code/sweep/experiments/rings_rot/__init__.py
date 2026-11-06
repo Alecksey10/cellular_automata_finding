@@ -17,7 +17,7 @@ from ...kernels import JIT_KWARGS
 from ...module import Role
 from ...modules.data import Grid2D
 from ...modules.filters import ClustersFilter, DensityFilter, StabilityFilter
-from ...modules.neighborhoods import Moore, RadiusDisc, TwoRings
+from ...neighbors import Moore, RadiusDisc, TwoRings
 from ...modules.randomizers import ClusteredFill, SymmetricFill, UniformFill
 from .visualizer import RotAgingVisualizer
 

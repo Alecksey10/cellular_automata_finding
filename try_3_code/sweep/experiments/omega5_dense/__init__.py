@@ -20,7 +20,7 @@ from __future__ import annotations
 from ...experiment import Experiment
 from ...module import Role
 from ...modules.filters import DensityFilter, DynamicsFilter, PresenceFilter, StateSharesFilter
-from ...modules.neighborhoods import Square5x5
+from ...neighbors import Square5x5
 from ...modules.randomizers import ClusteredFill, SymmetricFill, UniformFill
 from ..omega5 import REQUIRES, bind_rule, declare_rule, step_omega, web_parameters
 from ..omega5.data import OmegaGrid

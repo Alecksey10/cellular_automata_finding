@@ -10,7 +10,7 @@ from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement
 from ...kernels import JIT_KWARGS
 from ...module import Role
-from ...modules.neighborhoods import DuelRings
+from ...neighbors import DuelRings
 from numba import njit
 
 MECHANISMS = [

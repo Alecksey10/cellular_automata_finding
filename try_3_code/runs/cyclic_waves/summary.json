@@ -1,0 +1,19 @@
+{
+  "trials": 89285,
+  "passed": 100,
+  "rejected": 0,
+  "stopped": 89185,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 100,
+  "elapsed": 47.28,
+  "experiment": "cyclic_waves",
+  "description": "циклические фазы: k состояний и порог по следующей фазе",
+  "strategy": "random",
+  "seed": 1,
+  "mode": "process",
+  "workers": 4,
+  "limit": 10000000,
+  "until": 100,
+  "out": "runs/cyclic_waves"
+}

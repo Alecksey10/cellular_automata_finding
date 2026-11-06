@@ -29,7 +29,7 @@
   let pageIndex = 0;
   let pageSize = PAGE_SIZES.includes(Number(DATA.pageSize)) ? Number(DATA.pageSize) : 24;
   let defaultSpeed = 10;
-  let defaultLoop = false;
+  let defaultLoop = true;
   let views = [];
   let modalView = null;
   let raf = 0;
@@ -58,20 +58,20 @@
     node.innerHTML =
       '<div class="head"><b>#' + record.index + " · " + escapeHtml(record.digest.slice(0, 8)) + "</b>" +
       '<span class="badge">' + escapeHtml(record.status || "") + "</span></div>" +
-      '<div class="shot"><canvas aria-label="автомат"></canvas><span class="note"></span></div>' +
+      '<div class="shot"><canvas aria-label="automaton"></canvas><span class="note"></span></div>' +
       '<div class="line"></div>' +
       '<div class="controls">' +
-      '<button class="play" title="проиграть рост">▶</button>' +
-      '<button class="reset" title="вернуть начальный кадр">↺</button>' +
-      '<label class="knob" title="начинать заново после цели"><input class="loop" type="checkbox"> цикл</label>' +
-      '<label class="knob">размер <input class="size" type="number" min="8" max="512" step="1"></label>' +
-      '<label class="knob">итер. <input class="iters" type="number" min="1" step="1"></label>' +
-      '<label class="knob">итер/с <input class="speed" type="number" min="0.1" max="1000" step="1"></label>' +
-      '<button class="open" title="крупно">⛶</button>' +
+      '<button class="play" title="play growth">▶</button>' +
+      '<button class="reset" title="reset to initial frame">↺</button>' +
+      '<label class="knob" title="restart after the goal"><input class="loop" type="checkbox"> loop</label>' +
+      '<label class="knob">size <input class="size" type="number" min="8" max="512" step="1"></label>' +
+      '<label class="knob">steps <input class="iters" type="number" min="1" step="1"></label>' +
+      '<label class="knob">steps/s <input class="speed" type="number" min="0.1" max="1000" step="1"></label>' +
+      '<button class="open" title="enlarge">⛶</button>' +
       '<span class="step"></span>' +
       "</div>" +
-      '<details><summary>конфиг и метрики</summary><div class="legend"></div><pre></pre></details>' +
-      '<details><summary>правило</summary><pre class="rule"></pre></details>';
+      '<details><summary>config and metrics</summary><div class="legend"></div><pre></pre></details>' +
+      '<details><summary>rule</summary><pre class="rule"></pre></details>';
 
     const view = {
       record: record,
@@ -96,7 +96,7 @@
       accum: 0,
     };
 
-    view.line.textContent = metricLine(record) + "  ·  " + record.iterations + " итер.";
+    view.line.textContent = metricLine(record) + "  ·  " + record.iterations + " steps";
     view.pre.textContent = Object.entries(record.values || {}).map(([key, value]) => key + " = " + value).join("\n");
     view.rule.textContent = record.rule ? JSON.stringify(record.rule, null, 2) : "—";
     (record.legend || []).forEach(([color, label]) => {
@@ -116,14 +116,14 @@
       : null;
 
     if (!view.runner) {
-      view.note.textContent = "нет web-модуля";
+      view.note.textContent = "no web module";
       view.playButton.disabled = true;
       view.sizeInput.disabled = true;
       view.itersInput.disabled = true;
       view.speedInput.disabled = true;
       view.loopInput.disabled = true;
-      view.playButton.title = "для этого эксперимента нет sweep/experiments/<имя>/web.js";
-      view.step.textContent = record.iterations + " шагов";
+      view.playButton.title = "this experiment has no sweep/experiments/<name>/web.js";
+      view.step.textContent = record.iterations + " steps";
     } else {
       syncControls(view);
       paintFinal(view);
@@ -170,14 +170,14 @@
     if (!view.runner) return;
     const runner = view.runner;
     const tail = runner.loop && runner.done ? " ⟲" : "";
-    view.step.textContent = runner.iteration + " / " + runner.iterations + " шагов" + tail;
+    view.step.textContent = runner.iteration + " / " + runner.iterations + " steps" + tail;
   }
 
   function paintFinal(view) {
     paintGrid(view.record, view.canvas, finalGrid(view.record), view.record.width, view.record.height);
     view.node.classList.remove("live");
     view.badge.textContent = view.record.status || "";
-    view.step.textContent = view.record.iterations + " шагов";
+    view.step.textContent = view.record.iterations + " steps";
     if (modalView === view) paintModal(view);
   }
 
@@ -186,7 +186,7 @@
     if (!runner || !runner.state) return;
     paintGrid(runner.card, view.canvas, runner.state.grid, runner.width, runner.height);
     view.node.classList.add("live");
-    view.badge.textContent = "живой";
+    view.badge.textContent = "live";
     updateStep(view);
     if (modalView === view) paintModal(view);
   }
@@ -290,7 +290,7 @@
       const view = entry.target.__view;
       if (!view) continue;
       view.visible = entry.isIntersecting;
-      view.note.textContent = entry.isIntersecting ? "" : "вне экрана";
+      view.note.textContent = entry.isIntersecting ? "" : "off screen";
       if (entry.isIntersecting && view.playing) schedule();
     }
   }, { rootMargin: "160px" });
@@ -300,7 +300,7 @@
     if (!view || !view.runner || !view.runner.state) return;
     const runner = view.runner;
     paintGrid(runner.card, el("mcanvas"), runner.state.grid, runner.width, runner.height);
-    el("mstep").textContent = runner.iteration + " / " + runner.iterations + " шагов" +
+    el("mstep").textContent = runner.iteration + " / " + runner.iterations + " steps" +
       (runner.loop && runner.done ? " ⟲" : "");
   }
 
@@ -343,7 +343,7 @@
     search.set("from", String(pageIndex * pageSize));
     search.set("size", String(pageSize));
     search.set("speed", String(defaultSpeed));
-    if (defaultLoop) search.set("loop", "1");
+    search.set("loop", defaultLoop ? "1" : "0");
     try {
       history.replaceState(null, "", location.pathname + "?" + search.toString());
     } catch (error) {
@@ -362,7 +362,7 @@
     pageIndex = Number.isFinite(from) && from > 0 ? Math.floor(from / pageSize) : 0;
     const speed = Number(search.get("speed"));
     if (Number.isFinite(speed) && speed > 0) defaultSpeed = Math.max(0.1, Math.min(1000, speed));
-    defaultLoop = search.get("loop") === "1";
+    defaultLoop = search.get("loop") !== "0";
   }
 
   function renderPage() {
@@ -379,7 +379,7 @@
     el("grid").textContent = "";
     const target = run();
     if (!target) {
-      el("count").textContent = "нет прогонов";
+      el("count").textContent = "no runs";
       return;
     }
     const pages = pageCount();
@@ -392,15 +392,17 @@
       el("grid").append(view.node);
       observer.observe(view.node);
     }
-    el("count").textContent = target.cards.length + " карточек · " + (target.experiment || "");
+    el("count").textContent = target.cards.length + " cards · " + (target.experiment || "");
     el("pageNo").value = String(pageIndex + 1);
     el("pageNo").max = String(pages);
-    el("pageInfo").textContent = "из " + pages + " · " + (pageIndex * pageSize + 1) + "–" +
+    el("pageInfo").textContent = "of " + pages + " · " + (pageIndex * pageSize + 1) + "–" +
       (pageIndex * pageSize + slice.length);
     el("prev").disabled = pageIndex <= 0;
     el("next").disabled = pageIndex >= pages - 1;
     syncUrl();
     window.scrollTo({ top: 0 });
+    // страница открывается уже анимированной: карточки стартуют сразу
+    if (views.some((view) => view.runner)) playAll(true);
   }
 
   function goTo(index) {
@@ -437,7 +439,7 @@
       if (enable && view.runner) startView(view);
       else stopView(view);
     }
-    el("playAll").textContent = enable ? "⏸ все" : "▶ все";
+    el("playAll").textContent = enable ? "⏸ all" : "▶ all";
   }
 
   function applyAll() {

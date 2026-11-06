@@ -43,7 +43,7 @@ from ...module import (
 )
 from ...modules.data import Grid2D
 from ...modules.filters import DensityFilter
-from ...modules.neighborhoods import Moore, RadiusDisc
+from ...neighbors import Moore, RadiusDisc
 from .filters import StructureFilter
 from .visualizer import MazeVisualizer
 

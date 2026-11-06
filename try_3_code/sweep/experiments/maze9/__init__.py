@@ -37,7 +37,7 @@ from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement
 from ...module import BuildView, NeighborhoodSpec, RandomizerModule, Role, RuleModule, RuleRuntime
 from ...modules.filters import DensityFilter, DynamicsFilter
-from ...modules.neighborhoods import Square9x9
+from ...neighbors import Square9x9
 from ..maze import MazeGrid, step_maze
 from ..maze.filters import StructureFilter
 from .filters import GraphFilter

@@ -8,47 +8,46 @@
 
 from __future__ import annotations
 
+import numpy as np
 from numba import njit
 
 from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement, ge
 from ...kernels import JIT_KWARGS
+from ...neighbors.counts import count_matching
 from ...module import Role
 from ...modules.data import Grid2D
-from ...modules.filters import ClustersFilter, DensityFilter, PhasesFilter
-from ...modules.neighborhoods import Moore, RadiusDisc
+from ...modules.filters import ClustersFilter, DensityFilter, DynamicsFilter, PhasesFilter
+from ...neighbors import Moore, RadiusDisc
 from ...modules.randomizers import SymmetricFill, UniformFill
 from .visualizer import CyclicVisualizer
 
 
 @njit(**JIT_KWARGS)
 def step_cyclic(src, dst, dy, dx, wrap, zero, states, threshold, upper_resets):
-    """Фаза растёт, если соседей следующей фазы не меньше порога."""
+    """Фаза растёт, если соседей следующей фазы не меньше порога.
+
+    Соседи считаются общим счётчиком :func:`sweep.neighbors.counts.count_matching`:
+    сравниваемое состояние — не константа, а «следующая фаза» каждой клетки.
+    """
 
     height, width = src.shape
-    total = dy.size
     last = states - 1
+    upcoming = np.empty((height, width), dtype=np.int32)
+    for y in range(height):
+        for x in range(width):
+            nxt = src[y, x] + 1
+            if nxt >= states:
+                nxt = 0
+            upcoming[y, x] = nxt
+    counts = count_matching(src, dy, dx, wrap, upcoming)
     for y in range(height):
         for x in range(width):
             state = src[y, x]
-            nxt = state + 1
-            if nxt >= states:
-                nxt = 0
-            count = 0
-            for k in range(total):
-                yy = y + dy[k]
-                xx = x + dx[k]
-                if wrap:
-                    yy = yy % height
-                    xx = xx % width
-                elif yy < 0 or yy >= height or xx < 0 or xx >= width:
-                    continue
-                if src[yy, xx] == nxt:
-                    count += 1
             if state == last and upper_resets:
                 dst[y, x] = zero
-            elif count >= threshold:
-                dst[y, x] = nxt
+            elif counts[y, x] >= threshold:
+                dst[y, x] = upcoming[y, x]
             else:
                 dst[y, x] = state
 
@@ -106,14 +105,15 @@ def build_cyclic_waves() -> Experiment:
     )
 
     density = DensityFilter(min_fill=0.05, max_fill=0.95)
-    phases = PhasesFilter(min_share=0.02)
-    clusters = ClustersFilter(min_components=1, min_mean_size=3.0, max_largest_share=0.95)
+    dynamics = DynamicsFilter(min_change=0.001, max_change=0.90)
+    phases = PhasesFilter(min_share=0.1)
+    clusters = ClustersFilter(min_components=1, min_mean_size=2.0, max_largest_share=0.95)
 
     warmup = experiment.range("phase.warmup", 2, 6)
     observe = experiment.range("phase.observe", 8, 14)
 
     experiment.phase("warmup", warmup, filters=[density], frequency="end")
-    experiment.phase("observe", observe, filters=[density, phases, clusters], frequency="each")
+    experiment.phase("observe", observe, filters=[density, dynamics, phases, clusters], frequency="each")
 
     experiment.visualizer = CyclicVisualizer()
     return experiment

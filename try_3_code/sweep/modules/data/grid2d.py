@@ -11,11 +11,11 @@ from typing import Any, Mapping
 
 import numpy as np
 
-from ..interfaces import Capability, CapabilityKind
-from ..kernels import alive_count as _alive_count
-from ..kernels import state_histogram
-from ..module import DataModule, RandomizerModule
-from ..space import Namespace
+from ...interfaces import Capability, CapabilityKind
+from ...kernels import alive_count as _alive_count
+from ...kernels import state_histogram
+from ...module import DataModule, RandomizerModule
+from ...space import Namespace
 
 
 class Grid2D(DataModule):
@@ -24,7 +24,7 @@ class Grid2D(DataModule):
 
     def declare(self, ns: Namespace, view) -> None:
         ns.value("zero", 0)
-        ns.range("states", 14, 15)
+        ns.range("states", 3, 15)
         ns.range("width", 64, 65, 32)
         ns.range("height", 64, 65, 32)
 
@@ -86,11 +86,4 @@ class Grid2D(DataModule):
         return int(_alive_count(data, self.derive_zero(fixed)))
 
 
-class SymmetricGrid2D(Grid2D):
-    """Та же сетка, но с интерфейсом симметричной инициализации."""
-
-    id = "grid2d.symmetric"
-    label = "2D-сетка с симметричной инициализацией"
-
-
-__all__ = ["Grid2D", "SymmetricGrid2D"]
+__all__ = ["Grid2D"]

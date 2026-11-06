@@ -365,7 +365,7 @@ function jumpTo(raw) {
   const run = currentRun();
   if (!text || !run) return;
   let index = -1;
-  if (/^\d+$/.test(text)) {
+  if (/^[0-9]+$/.test(text)) {
     index = Math.min(run.cards.length - 1, Number(text));
   } else {
     index = run.cards.findIndex((card) => card.digest.startsWith(text));

@@ -25,7 +25,7 @@ from ...experiment import Experiment
 from ...interfaces import CapabilityKind, Requirement, eq, ge
 from ...module import Role
 from ...modules.filters import ClustersFilter, DensityFilter, PhasesFilter, StabilityFilter
-from ...modules.neighborhoods import Square5x5
+from ...neighbors import Square5x5
 from ...modules.randomizers import ClusteredFill, SymmetricFill, UniformFill
 from .data import OmegaGrid
 from .kernel import step_omega

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TITLE__</title>
@@ -69,28 +69,28 @@
 <body>
 <header>
   <h1>sweep</h1>
-  <select id="runSel" title="прогон"></select>
+  <select id="runSel" title="run"></select>
   <span class="hint" id="count"></span>
   <span class="grow"></span>
-  <button id="playAll" class="primary" title="проиграть рост в браузере">▶ все</button>
-  <button id="pauseAll" title="остановить все карточки">⏸</button>
-  <label class="hint" title="начинать итерации заново после достижения цели">
-    <input id="loopAll" type="checkbox"> цикл
+  <button id="playAll" class="primary" title="play growth in the browser">▶ all</button>
+  <button id="pauseAll" title="pause all cards">⏸</button>
+  <label class="hint" title="restart after finishing the review">
+    <input id="loopAll" type="checkbox"> loop
   </label>
-  <label class="hint">итер/с <input id="speedAll" type="number" min="0.1" max="1000" step="1" value="10"></label>
-  <label class="hint">размер <input id="sizeAll" type="number" min="8" max="512" step="1" placeholder="—"></label>
-  <label class="hint">итер. <input id="itersAll" type="number" min="1" step="1" placeholder="—"></label>
-  <button id="applyAll" title="применить цикл, скорость, размер и итерации ко всем карточкам">применить</button>
-  <span class="hint">считается в браузере · без сервера</span>
+  <label class="hint">steps/s <input id="speedAll" type="number" min="0.1" max="1000" step="1" value="10"></label>
+  <label class="hint">size <input id="sizeAll" type="number" min="8" max="512" step="1" placeholder="—"></label>
+  <label class="hint">steps <input id="itersAll" type="number" min="1" step="1" placeholder="—"></label>
+  <button id="applyAll" title="apply loop, speed, size and steps to every card">apply</button>
+  <span class="hint">computed in the browser · no server</span>
 </header>
 <main id="grid"></main>
 <footer>
-  <button id="prev">‹ назад</button>
-  <label class="hint">стр. <input id="pageNo" type="number" min="1" value="1"></label>
+  <button id="prev">‹ prev</button>
+  <label class="hint">page <input id="pageNo" type="number" min="1" value="1"></label>
   <span class="hint" id="pageInfo"></span>
-  <button id="next">вперёд ›</button>
-  <label class="hint">по <select id="pageSize"></select></label>
-  <label class="hint">смещение <input id="jump" type="text" placeholder="номер или digest"></label>
+  <button id="next">next ›</button>
+  <label class="hint">per page <select id="pageSize"></select></label>
+  <label class="hint">jump <input id="jump" type="text" placeholder="index or digest"></label>
 </footer>
 <div id="modal" hidden>
   <div class="sheet">
@@ -99,10 +99,10 @@
     <div class="bar">
       <button id="mplay" class="primary">▶</button>
       <button id="mrestart">↺</button>
-      <label class="hint"><input id="mloop" type="checkbox"> цикл</label>
-      <label class="hint">размер <input id="msize" type="number" min="8" max="512" step="8"></label>
-      <label class="hint">итер. <input id="miters" type="number" min="1" step="1"></label>
-      <label class="hint">итер/с <input id="mspeed" type="number" min="0.1" max="1000" step="1"></label>
+      <label class="hint"><input id="mloop" type="checkbox"> loop</label>
+      <label class="hint">size <input id="msize" type="number" min="8" max="512" step="8"></label>
+      <label class="hint">steps <input id="miters" type="number" min="1" step="1"></label>
+      <label class="hint">steps/s <input id="mspeed" type="number" min="0.1" max="1000" step="1"></label>
       <span class="step" id="mstep"></span>
     </div>
   </div>
