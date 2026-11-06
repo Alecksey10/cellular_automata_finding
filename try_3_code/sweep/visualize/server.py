@@ -52,15 +52,17 @@ def query_overrides(record: Mapping[str, Any], query: Mapping[str, list[str]]) -
     """Мета-параметры из query-строки, допустимые для этого конфига."""
 
     values = record.get("config", {}).get("values", {})
-    allowed = {
-        key
-        for key, value in values.items()
-        if key.startswith(META_PREFIX) and isinstance(value, int) and not isinstance(value, bool)
-    }
-    if SIZE_KEY in values:
-        allowed.add(SIZE_KEY)
-    elif isinstance(values.get("grid2d.width"), int) and values.get("grid2d.width") == values.get("grid2d.height"):
-        allowed.add(SIZE_KEY)
+    allowed = {str(item["key"]) for item in meta_parameters(record)}
+    if not allowed:
+        allowed = {
+            key
+            for key, value in values.items()
+            if key.startswith(META_PREFIX) and isinstance(value, int) and not isinstance(value, bool)
+        }
+        if SIZE_KEY in values:
+            allowed.add(SIZE_KEY)
+        elif isinstance(values.get("grid2d.width"), int) and values.get("grid2d.width") == values.get("grid2d.height"):
+            allowed.add(SIZE_KEY)
     overrides: dict[str, int] = {}
     for key in allowed | {"seed"}:
         raw = query.get(key)

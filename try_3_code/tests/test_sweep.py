@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -431,6 +433,165 @@ class StorageTest(unittest.TestCase):
             store.save(config, TrialResult("stopped", {}, "test", 5, [], None, 0.01))
             self.assertFalse((Path(tmp) / "successes.jsonl").exists())
             self.assertEqual(store.done_digests(), set())
+
+
+class WebBuildTest(unittest.TestCase):
+    """Браузерная сборка: упаковка сеток, модули и статический каталог."""
+
+    def test_plane_packing(self) -> None:
+        from sweep.visualize.build import pack_plane, plane_bits
+
+        grid = np.zeros((8, 8), dtype=np.int32)
+        grid[0, 1] = 1
+        grid[7, 7] = 1
+        self.assertEqual(plane_bits(2), 1)
+        packed = base64.b64decode(pack_plane(grid, 1))
+        self.assertEqual(len(packed), 8)
+        restored = np.unpackbits(np.frombuffer(packed, dtype=np.uint8)).reshape(8, 8)
+        self.assertTrue(np.array_equal(restored.astype(np.int32), grid))
+        self.assertEqual(pack_plane(np.zeros((4, 4), dtype=np.int32), 1), "")
+        nibbles = np.array([[1, 13, 0, 2]], dtype=np.int32)
+        self.assertEqual(list(base64.b64decode(pack_plane(nibbles, 4))), [0x1D, 0x02])
+
+    def test_site_keeps_only_experiments_with_web_module(self) -> None:
+        from sweep.visualize.build import module_path
+
+        for experiment in ("maze", "maze9", "langton", "life", "cyclic_waves", "expBeamFree"):
+            self.assertIsNotNone(module_path(experiment), experiment)
+        self.assertIsNone(module_path("no_such_experiment"))
+
+    def test_bundle_exposes_runner_and_helpers(self) -> None:
+        from sweep.visualize.build import bundle_source
+
+        source = bundle_source(["maze"])
+        for needle in (
+            "function createRunner",
+            "class Runner",
+            "registerExperiment",
+            "experimentIds",
+            "resizeCard",
+            "gridToBase64",
+        ):
+            self.assertIn(needle, source)
+        # helpers идут раньше модулей экспериментов
+        self.assertLess(source.index("function gridFromBase64"), source.index("registerExperiment({"))
+
+    def test_card_payload_has_web_controls(self) -> None:
+        from sweep.visualize.build import card_payload
+
+        root = Path(__file__).resolve().parents[1]
+        record = json.loads((root / "runs/maze9/successes.jsonl").read_text(encoding="utf-8").splitlines()[0])
+        card = card_payload(record, 0)
+        self.assertIn("phases", card)
+        self.assertTrue(card["phases"])
+        self.assertIsNotNone(card["nativeSize"])
+        self.assertTrue(any(meta["label"] == "размер" for meta in card["meta"]))
+        self.assertNotIn("phase.observe", card["values"])
+
+    def test_web_runtime_loop_resize_and_speed(self) -> None:
+        import shutil
+        import subprocess
+
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("node не установлен")
+        from sweep.visualize.build import bundle_source
+
+        script = Path(__file__).with_name("web_runtime.test.js")
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle = Path(tmp) / "rules.js"
+            bundle.write_text(bundle_source(["life"]), encoding="utf-8")
+            done = subprocess.run(
+                [node, str(script), str(bundle)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr or done.stdout)
+
+    def test_exp_beam_free_web_matches_python(self) -> None:
+        import shutil
+        import subprocess
+
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("node не установлен")
+        from sweep.visualize.build import bundle_source, card_payload, web_parameters_for
+
+        root = Path(__file__).resolve().parents[1]
+        record = json.loads((root / "runs/ebf/successes.jsonl").read_text(encoding="utf-8").splitlines()[0])
+        params = web_parameters_for("expBeamFree", record["config"]["values"])
+        self.assertIsNotNone(params)
+        assert params is not None
+        self.assertIsInstance(params["mechanism"], int)
+
+        card = card_payload(record, 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle = Path(tmp) / "rules.js"
+            payload = Path(tmp) / "card.json"
+            script = Path(tmp) / "check.js"
+            bundle.write_text(bundle_source(["expBeamFree"]), encoding="utf-8")
+            payload.write_text(json.dumps(card), encoding="utf-8")
+            script.write_text(
+                """
+const fs = require("fs");
+eval(fs.readFileSync(process.argv[2], "utf8"));
+const card = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
+const runner = SweepRules.createRunner(card, {
+  iterations: card.iterations, speed: 1, loop: false,
+});
+runner.advance(card.iterations);
+const expected = SweepRules.finalGrid(card);
+if (runner.state.grid.length !== expected.length) process.exit(2);
+for (let i = 0; i < expected.length; i += 1) {
+  if (runner.state.grid[i] !== expected[i]) {
+    console.error("первое расхождение в клетке " + i);
+    process.exit(3);
+  }
+}
+""",
+                encoding="utf-8",
+            )
+            done = subprocess.run(
+                [node, str(script), str(bundle), str(payload)],
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr or done.stdout)
+
+    def test_experiment_can_supply_web_parameters(self) -> None:
+        from sweep.visualize.build import web_parameters_for
+
+        root = Path(__file__).resolve().parents[1]
+        record = json.loads((root / "runs/omega5_dense/successes.jsonl").read_text(encoding="utf-8").splitlines()[0])
+        params = web_parameters_for("omega5_dense", record["config"]["values"])
+        self.assertIsNotNone(params)
+        assert params is not None
+        self.assertEqual(len(params["groups"]), 24)
+        self.assertIn("mechanism", params)
+        self.assertEqual(len(params["birth"]), 2)
+
+    def test_build_site_makes_self_contained_catalog(self) -> None:
+        from sweep.visualize.build import build_site
+
+        root = Path(__file__).resolve().parents[1]
+        record = json.loads((root / "runs/maze9/successes.jsonl").read_text(encoding="utf-8").splitlines()[0])
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp) / "maze9"
+            run.mkdir()
+            (run / "successes.jsonl").write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+            summary = build_site({"maze9": RunStore(run)}, Path(tmp) / "site", page_size=12)
+            site = Path(tmp) / "site"
+            self.assertEqual(summary["cards"], 1)
+            self.assertEqual(summary["experiments"], ["maze9"])
+            self.assertTrue((site / ".nojekyll").is_file())
+            self.assertTrue((site / "assets" / "rules.js").is_file())
+            self.assertTrue((site / "assets" / "gallery.js").is_file())
+            html = (site / "index.html").read_text(encoding="utf-8")
+            self.assertIn('"experiment":"maze9"', html)
+            self.assertIn('"pageSize":12', html)
+            self.assertIn('"nativeSize":', html)
 
 
 if __name__ == "__main__":

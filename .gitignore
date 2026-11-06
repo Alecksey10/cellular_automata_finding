@@ -2,3 +2,7 @@
 **/__pycache__
 try_3_code/site/**/*.png
 try_3_code/viz/**/*.png
+
+# локальные сборки галереи (в репозиторий не попадают)
+try_3_code/site/
+try_3_code/pages/_site/

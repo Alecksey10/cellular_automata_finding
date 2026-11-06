@@ -34,9 +34,11 @@ from .rule import (
     MECHANISMS,
     STATES,
     TRICKS,
+    WINDOW_OFFSETS,
     category_interval,
     group_ids,
     mechanism_max,
+    rule_descriptor,
     trick_code,
 )
 from .visualizer import OmegaVisualizer
@@ -144,4 +146,32 @@ def build_omega5() -> Experiment:
     return experiment
 
 
-__all__ = ["bind_rule", "build_omega5", "declare_rule", "step_omega"]
+def web_parameters(values: Mapping[str, Any]) -> dict[str, Any]:
+    """Параметры, которые браузерный модуль не может вывести из одного конфига.
+
+    ``build.py`` кладёт результат в ``card.params``. Группы соседей должны
+    идти в том же порядке, что и ``neighborhoodOffsets`` в JS (окно 5×5 по
+    строкам), а интервалы B/S/D уже посчитаны правилом.
+    """
+
+    info = rule_descriptor(values)
+    mechanism = str(info["mechanism"]["id"])
+    groups = group_ids(mechanism, WINDOW_OFFSETS)
+    return {
+        "groups": [int(group) for group in groups],
+        "birth": list(info["categories"]["birth"]["interval"]),
+        "survival": list(info["categories"]["survival"]["interval"]),
+        "death": list(info["categories"]["death"]["interval"]),
+        "birthState": int(info["categories"]["birth"].get("state", 1)),
+        "trick": int(info["trick"]["code"]),
+        "mechanism": int(info["mechanism"]["code"]),
+    }
+
+
+__all__ = [
+    "bind_rule",
+    "build_omega5",
+    "declare_rule",
+    "step_omega",
+    "web_parameters",
+]

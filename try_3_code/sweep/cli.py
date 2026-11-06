@@ -363,21 +363,20 @@ def cmd_view(args: argparse.Namespace) -> int:
 
 
 def cmd_export(args: argparse.Namespace) -> int:
-    """Статическая галерея для GitHub Pages: без Python и пересборки."""
+    """Статическая галерея для GitHub Pages: всё считается в браузере."""
 
-    from .visualize.static import export_site
+    from .visualize.build import build_site
 
     stores = _stores(args)
-    summary = export_site(
-        stores,
-        args.out,
-        frames=args.frames,
-        scale=args.scale,
-        title=args.title,
-    )
+    summary = build_site(stores, args.out, title=args.title, page_size=args.page_size)
+    size = summary["bytes"] / (1024 * 1024)
     print(
         f"экспорт: {Path(args.out)}  ·  прогонов: {summary['runs']}  ·  карточек: {summary['cards']}"
+        f"  ·  {size:.1f} МБ"
     )
+    print("эксперименты: " + ", ".join(summary["experiments"]))
+    if summary["skipped"]:
+        print("пропущены (нет web-модуля): " + ", ".join(sorted(set(summary["skipped"]))))
     print(f"открыть локально: {Path(args.out) / 'index.html'}")
     return 0
 
@@ -476,8 +475,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--run-dir", action="append", help="каталог прогона (можно несколько)")
     p.add_argument("--runs", help="каталог с прогонами-подкаталогами")
     p.add_argument("--out", default="site")
-    p.add_argument("--frames", type=int, default=12, help="кадров в контактном листе")
-    p.add_argument("--scale", type=int, default=2)
+    p.add_argument("--page-size", type=int, default=24, help="карточек на странице по умолчанию")
     p.add_argument("--title", default="sweep")
     p.set_defaults(func=cmd_export)
     return parser

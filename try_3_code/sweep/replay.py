@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import importlib
 import math
 from typing import Any, Mapping
 
@@ -92,8 +93,41 @@ def resolution_of(values: Mapping[str, Any]) -> int | None:
     return None
 
 
+def _web_meta_parameters_hook(record: Mapping[str, Any]) -> list[dict[str, Any]] | None:
+    """Необязательный хук эксперимента для мета-параметров галереи.
+
+    Если эксперимент определяет в своём пакете ``web_meta_parameters(record)``,
+    его результат полностью заменяет стандартный набор. Это позволяет новому
+    автомату добавлять собственные регуляторы без правки ``replay.py``.
+    """
+
+    config = record.get("config", {})
+    experiment = str(config.get("experiment", ""))
+    if not experiment:
+        return None
+    try:
+        from .experiments import get_experiment
+
+        module_name = getattr(get_experiment(experiment), "web_dir", None) or experiment
+    except KeyError:
+        module_name = experiment
+    try:
+        module = importlib.import_module(f"sweep.experiments.{module_name}")
+    except ImportError:
+        return None
+    hook = getattr(module, "web_meta_parameters", None)
+    if not callable(hook):
+        return None
+    result = hook(record)
+    return list(result) if result else None
+
+
 def meta_parameters(record: Mapping[str, Any]) -> list[dict[str, Any]]:
     """Мета-параметры карточки: длительности фаз, разрешение и seed."""
+
+    hooked = _web_meta_parameters_hook(record)
+    if hooked is not None:
+        return hooked
 
     config = record.get("config", {})
     values = config.get("values", {})
@@ -139,13 +173,15 @@ def clean_overrides(record: Mapping[str, Any], overrides: Mapping[str, Any] | No
     if not overrides:
         return {}
     values = record.get("config", {}).get("values", {})
-    allowed = {
-        key
-        for key, value in values.items()
-        if key.startswith(META_PREFIX) and isinstance(value, int) and not isinstance(value, bool)
-    }
-    if resolution_of(values) is not None:
-        allowed.add(SIZE_KEY)
+    allowed = {str(item["key"]) for item in meta_parameters(record)}
+    if not allowed:
+        allowed = {
+            key
+            for key, value in values.items()
+            if key.startswith(META_PREFIX) and isinstance(value, int) and not isinstance(value, bool)
+        }
+        if resolution_of(values) is not None:
+            allowed.add(SIZE_KEY)
     cleaned: dict[str, int] = {}
     for key, raw in overrides.items():
         if key != "seed" and key not in allowed:

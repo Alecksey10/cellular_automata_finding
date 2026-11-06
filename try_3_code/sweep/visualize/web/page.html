@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+ :root { color-scheme: dark; }
+ * { box-sizing: border-box; }
+ body { margin: 0; background: #0d0f13; color: #d7dbe3;
+        font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+ header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px;
+          flex-wrap: wrap; padding: 10px 16px; background: #0f1218; border-bottom: 1px solid #232733; }
+ header h1 { margin: 0; font-size: 15px; font-weight: 600; white-space: nowrap; }
+ select, input[type=number], input[type=text] { background: #12161f; color: #e4e9f2; border: 1px solid #2e3648;
+          border-radius: 6px; padding: 3px 6px; font: inherit; }
+ select { max-width: 200px; }
+ input[type=number] { width: 70px; }
+ input[type=text] { width: 150px; }
+ button { background: #1d2330; color: #dfe4ee; border: 1px solid #2e3648; border-radius: 7px;
+          padding: 5px 11px; font: inherit; cursor: pointer; }
+ button:hover { background: #243047; }
+ button:disabled { opacity: .4; cursor: default; }
+ button.primary { background: #2d5fbf; border-color: #3c74d8; }
+ input[type=range] { width: 84px; vertical-align: -3px; }
+ .hint { color: #7d879b; font-size: 12px; }
+ .grow { flex: 1; }
+ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 14px; padding: 16px; }
+ .card { background: #131824; border: 1px solid #232b3a; border-radius: 10px; overflow: hidden;
+         display: flex; flex-direction: column; }
+ .card.live { border-color: #2f4a86; }
+ .head { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+         padding: 8px 10px; border-bottom: 1px solid #1d2430; }
+ .head b { font: 12px ui-monospace, monospace; color: #cfd8e8; }
+ .badge { font-size: 11px; color: #93a0b8; background: #1b2333; border-radius: 999px;
+          padding: 1px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+ .card.live .badge { background: #1c2f52; color: #a9c8ff; }
+ .shot { position: relative; background: #0b0d11; display: grid; place-items: center; }
+ .shot canvas { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+ .shot .note { position: absolute; inset: 0; display: grid; place-items: center;
+               color: #6f788c; font-size: 12px; pointer-events: none; }
+ .line { padding: 7px 10px 0; color: #8b93a7; font: 11.5px ui-monospace, monospace; }
+ .controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 10px 4px; }
+ .controls button { padding: 3px 9px; }
+ .controls .knob { display: flex; align-items: center; gap: 4px; color: #8b93a7; font-size: 11.5px; }
+ .controls input[type=checkbox] { accent-color: #3c74d8; }
+ .controls input[type=number] { width: 62px; }
+ .controls .step { margin-left: auto; color: #7d879b; font: 11px ui-monospace, monospace; }
+ details { border-top: 1px solid #1d2430; }
+ summary { padding: 6px 10px; color: #8b93a7; font-size: 11.5px; cursor: pointer; }
+ details pre { margin: 0; padding: 0 10px 8px; color: #a9b4c8; font: 11px/1.5 ui-monospace, monospace;
+               white-space: pre-wrap; max-height: 200px; overflow: auto; }
+ .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 4px 10px 8px; font-size: 11.5px; color: #a9b4c8; }
+ .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block;
+             vertical-align: -1px; margin-right: 5px; }
+ footer { display: flex; align-items: center; justify-content: center; gap: 10px;
+          padding: 4px 16px 28px; flex-wrap: wrap; }
+ #modal { position: fixed; inset: 0; z-index: 20; background: #05070ad9; display: grid; place-items: center; padding: 18px; }
+ #modal[hidden] { display: none; }
+ .sheet { background: #10141d; border: 1px solid #2a3345; border-radius: 12px; padding: 12px;
+          display: flex; flex-direction: column; gap: 10px; max-width: 620px; width: 100%; }
+ .sheet header { position: static; padding: 0; background: none; border: 0; }
+ .sheet canvas { width: 100%; height: auto; image-rendering: pixelated; background: #0b0d11;
+                 border-radius: 8px; border: 1px solid #1c2432; }
+ .sheet .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+ .sheet .bar input[type=number] { width: 68px; }
+ .sheet .bar .step { margin-left: auto; color: #8b93a7; font: 12px ui-monospace, monospace; }
+</style>
+<body>
+<header>
+  <h1>sweep</h1>
+  <select id="runSel" title="прогон"></select>
+  <span class="hint" id="count"></span>
+  <span class="grow"></span>
+  <button id="playAll" class="primary" title="проиграть рост в браузере">▶ все</button>
+  <button id="pauseAll" title="остановить все карточки">⏸</button>
+  <label class="hint" title="начинать итерации заново после достижения цели">
+    <input id="loopAll" type="checkbox"> цикл
+  </label>
+  <label class="hint">итер/с <input id="speedAll" type="number" min="0.1" max="1000" step="1" value="10"></label>
+  <label class="hint">размер <input id="sizeAll" type="number" min="8" max="512" step="1" placeholder="—"></label>
+  <label class="hint">итер. <input id="itersAll" type="number" min="1" step="1" placeholder="—"></label>
+  <button id="applyAll" title="применить цикл, скорость, размер и итерации ко всем карточкам">применить</button>
+  <span class="hint">считается в браузере · без сервера</span>
+</header>
+<main id="grid"></main>
+<footer>
+  <button id="prev">‹ назад</button>
+  <label class="hint">стр. <input id="pageNo" type="number" min="1" value="1"></label>
+  <span class="hint" id="pageInfo"></span>
+  <button id="next">вперёд ›</button>
+  <label class="hint">по <select id="pageSize"></select></label>
+  <label class="hint">смещение <input id="jump" type="text" placeholder="номер или digest"></label>
+</footer>
+<div id="modal" hidden>
+  <div class="sheet">
+    <header><b id="mtitle"></b><span class="grow"></span><button id="mclose">✕</button></header>
+    <canvas id="mcanvas"></canvas>
+    <div class="bar">
+      <button id="mplay" class="primary">▶</button>
+      <button id="mrestart">↺</button>
+      <label class="hint"><input id="mloop" type="checkbox"> цикл</label>
+      <label class="hint">размер <input id="msize" type="number" min="8" max="512" step="8"></label>
+      <label class="hint">итер. <input id="miters" type="number" min="1" step="1"></label>
+      <label class="hint">итер/с <input id="mspeed" type="number" min="0.1" max="1000" step="1"></label>
+      <span class="step" id="mstep"></span>
+    </div>
+  </div>
+</div>
+<script>window.SWEEP_DATA = __DATA__;</script>
+<script src="assets/rules.js"></script>
+<script src="assets/gallery.js"></script>
+</body>
+</html>

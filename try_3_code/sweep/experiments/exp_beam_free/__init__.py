@@ -25,6 +25,7 @@ def build_expBeamFree() -> Experiment:
         "expBeamFree",
         description="дуэль двух групп: подавление, усиление и конверсия в двух кольцах",
         stop_on_extinct=True,
+        web_dir="exp_beam_free",
     )
 
     experiment.select(Role.DATA, DuelGrid())
@@ -71,4 +72,10 @@ def build_expBeamFree() -> Experiment:
     return experiment
 
 
-__all__ = ["build_expBeamFree"]
+def web_parameters(values: Mapping[str, Any]) -> dict[str, Any]:
+    """Код механизма для браузерного модуля (порядок ``MECHANISMS`` в Python)."""
+
+    return {"mechanism": MECHANISMS.index(str(values.get("rule.duel.mechanism", MECHANISMS[0])))}
+
+
+__all__ = ["build_expBeamFree", "web_parameters"]

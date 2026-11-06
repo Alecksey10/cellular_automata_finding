@@ -364,6 +364,27 @@ def build_langton() -> Experiment:
     return experiment
 
 
+
+def web_card_details(values: Mapping[str, Any], seed: int = 0) -> dict[str, Any]:
+    """Повороты и стартовые муравьи для браузерной карточки.
+
+    Считает Python по тому же ``seed``, что и прогон, поэтому браузерный
+    модуль не повторяет таблицу поворотов и расстановку муравьёв.
+    """
+
+    from . import LangtonRuntime, parse_rules
+
+    turns = parse_rules(str(values["rule.langton.rules"]), seed)
+    size = int(values.get("grid2d.size") or values["grid2d.width"])
+    runtime = LangtonRuntime(turns, int(values["rule.langton.ants"]), str(values["rule.langton.place"]))
+    runtime._reset((size, size), seed)
+    return {
+        "turns": [int(turn) for turn in turns],
+        "ants": [[int(y), int(x), int(heading)] for y, x, heading in runtime.ants],
+    }
+
+
+
 __all__ = [
     "LangtonGrid",
     "LangtonRule",
@@ -373,6 +394,7 @@ __all__ = [
     "SettleFilter",
     "TrailFill",
     "build_langton",
+    "web_card_details",
     "parse_rules",
     "trail_stats",
 ]

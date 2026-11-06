@@ -39,10 +39,21 @@ class Phase:
 
 
 class Experiment:
-    def __init__(self, name: str, description: str = "", *, stop_on_extinct: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        description: str = "",
+        *,
+        stop_on_extinct: bool = False,
+        web_dir: str | None = None,
+    ) -> None:
         self.name = name
         self.description = description
         self.stop_on_extinct = stop_on_extinct
+        # Каталог experiment-пакета, если он не совпадает с именем эксперимента.
+        # Нужно только для статической web-сборки; Python-движку имя каталога
+        # не важно.
+        self.web_dir = web_dir
         self.space = Space()
         self._modules: dict[Role, list[Module]] = {role: [] for role in Role}
         self._phases: list[Phase] = []
