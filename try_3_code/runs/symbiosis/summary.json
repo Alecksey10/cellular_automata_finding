@@ -1,0 +1,19 @@
+{
+  "trials": 1479,
+  "passed": 100,
+  "rejected": 0,
+  "stopped": 1379,
+  "errors": 0,
+  "resumed": 0,
+  "successes": 100,
+  "elapsed": 88.029,
+  "experiment": "symbiosis",
+  "description": "7 состояний: опора R20/R30, зависимые с секторами R5, споры и импульсы",
+  "strategy": "random",
+  "seed": 1,
+  "mode": "process",
+  "workers": 4,
+  "limit": 10000000,
+  "until": 100,
+  "out": "runs/symbiosis"
+}

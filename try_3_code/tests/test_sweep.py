@@ -25,6 +25,13 @@ from sweep.experiments.omega5_dense.profile import (
     describe_profile,
     validate_profile,
 )
+from sweep.experiments.symbiosis.rule import (
+    logic_offsets,
+    sector_counts,
+    sector_ids,
+    support_masks,
+    support_offsets,
+)
 from sweep.module import Observation
 from sweep.modules.filters import DynamicsRuntime, PresenceRuntime, StateSharesRuntime
 from sweep.replay import frames_for, states_of
@@ -671,6 +678,100 @@ class NeighborsTest(unittest.TestCase):
                             ones[y, x] += 1
             self.assertTrue(np.array_equal(count_nonzero(grid, dy, dx, wrap, 0), alive))
             self.assertTrue(np.array_equal(count_state(grid, dy, dx, wrap, 1), ones))
+
+
+class SymbiosisTest(unittest.TestCase):
+    """Симбиоз: 7 состояний, опора R20/R30 и секторы круга радиуса 5."""
+
+    #: Рабочий режим: колонии ветвятся, все семь состояний остаются в кадре.
+    PARAMS = {
+        "rule.symbiosis.anchor_radius": 20,
+        "rule.symbiosis.matrix_radius": 30,
+        "rule.symbiosis.metric": "euclidean",
+        "rule.symbiosis.support_window": "disc",
+        "rule.symbiosis.logic_window": "disc",
+        "rule.symbiosis.sectors": 8,
+        "rule.symbiosis.sector_mode": "ring",
+        "rule.symbiosis.sector_need": 1,
+        "rule.symbiosis.n_anchor_birth": 60,
+        "rule.symbiosis.m_anchor_birth": 1,
+        "rule.symbiosis.n_anchor_surv": 3,
+        "rule.symbiosis.m_anchor_surv": 0,
+        "rule.symbiosis.n_anchor_max": 260,
+        "rule.symbiosis.n_matrix_birth": 90,
+        "rule.symbiosis.m_matrix_birth": 1,
+        "rule.symbiosis.n_matrix_surv": 4,
+        "rule.symbiosis.m_matrix_surv": 0,
+        "rule.symbiosis.n_matrix_max": 420,
+        "rule.symbiosis.grazer_birth": 4,
+        "rule.symbiosis.grazer_surv": 1,
+        "rule.symbiosis.grazer_max": 16,
+        "rule.symbiosis.weaver_birth": 4,
+        "rule.symbiosis.weaver_surv": 1,
+        "rule.symbiosis.weaver_max": 16,
+        "rule.symbiosis.pulse_prob": 0.04,
+        "rule.symbiosis.spore_decay": 0.01,
+        "rule.symbiosis.wrap": True,
+    }
+
+    def _assembly(self):
+        experiment = get_experiment("symbiosis")
+        experiment.finalize()
+        binding = dict(next(experiment.iter_configs(max_configs=1)))
+        binding.update(self.PARAMS)
+        config = Config("symbiosis", binding, 7)
+        return experiment, config, assemble(experiment, config)
+
+    def test_geometry_partitions_circle(self) -> None:
+        disc = logic_offsets("disc", "euclidean")
+        self.assertEqual(len(disc), 80)  # круг радиуса 5: больше 25 клеток
+        ring = logic_offsets("ring", "euclidean")
+        self.assertLess(len(ring), len(disc))
+        for sectors in (2, 4, 6, 8):
+            ids = sector_ids(disc, sectors)
+            self.assertEqual(len(ids), len(disc))
+            self.assertEqual(sum(sector_counts(ids, sectors)), len(disc))
+            self.assertEqual(min(ids), 0)
+            self.assertEqual(max(ids), sectors - 1)
+
+        offsets = support_offsets(30, "euclidean")
+        in_anchor, in_matrix = support_masks(offsets, 20, 30, "disc", "euclidean")
+        self.assertEqual(len(in_anchor), len(offsets))
+        self.assertEqual(sum(in_matrix), len(offsets))
+        self.assertGreater(sum(in_anchor), 1000)
+        self.assertGreater(len(offsets), sum(in_anchor))
+
+    def test_support_does_not_grow_without_dependents(self) -> None:
+        _, _, assembly = self._assembly()
+        grid = np.zeros((32, 32), dtype=np.int32)
+        grid[8:24, 8:24] = 1  # только опора, зависимых нет
+        dst = np.zeros_like(grid)
+        assembly.rule_runtime.step(grid, dst, 0, 7)
+        self.assertFalse(bool(((grid == 0) & (dst == 1)).any()))
+
+    def test_rule_keeps_all_states_alive_and_moves(self) -> None:
+        _, config, assembly = self._assembly()
+        rng = np.random.default_rng(3)
+        grid = assembly.data.create(assembly.fixed, rng, assembly.randomizer)
+        dst = np.zeros_like(grid)
+        seen: set[int] = set()
+        changes: list[float] = []
+        for step in range(40):
+            assembly.rule_runtime.step(grid, dst, step, config.seed)
+            changes.append(float((grid != dst).mean()))
+            grid, dst = dst, grid
+            seen.update(int(value) for value in np.unique(grid))
+        self.assertEqual(seen, set(range(7)))
+        self.assertGreater(float(np.mean(changes[-8:])), 0.005)
+        self.assertGreater(float((grid != 0).mean()), 0.02)
+        self.assertLess(float(changes[-1]), 0.6)
+
+    def test_replay_is_deterministic(self) -> None:
+        experiment, config, _ = self._assembly()
+        first = Trial(assemble(experiment, config), config.seed).run()
+        second = Trial(assemble(experiment, config), config.seed).run()
+        self.assertEqual(first.status, second.status)
+        self.assertEqual(first.iterations, second.iterations)
 
 
 if __name__ == "__main__":

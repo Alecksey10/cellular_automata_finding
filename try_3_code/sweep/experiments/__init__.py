@@ -20,10 +20,12 @@ from .maze9 import build_maze9
 from .omega5 import build_omega5
 from .omega5_dense import build_omega5_dense
 from .rings_rot import build_rings_rot
+from .symbiosis import build_symbiosis
 
 BUILDERS: dict[str, Callable[[], Experiment]] = {
     "life": build_life,
     "rings_rot": build_rings_rot,
+    "symbiosis": build_symbiosis,
     "cyclic_waves": build_cyclic_waves,
     "expBeamFree": build_expBeamFree,
     "langton": build_langton,
